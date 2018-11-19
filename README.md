@@ -1,5 +1,4 @@
 # Studying the Impact of Let's Encrypt
----
 
 https://letsencrypt.org/
 
