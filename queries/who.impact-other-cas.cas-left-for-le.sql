@@ -36,8 +36,8 @@ WHERE
   AND inner_org_name != 'Let\'s Encrypt'
   AND p443.https.tls.certificate.parsed.subject_dn = certs.parsed.subject_dn
 
-  -- Let's only look at precerts for other CAs.
-  AND certs.precert
+  -- Let's only look at non-precerts.
+  AND not certs.precert
 
   -- Validity of other cert must have started before the validity of the current
   -- Let's Encrypt cert.

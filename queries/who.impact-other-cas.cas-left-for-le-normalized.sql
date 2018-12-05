@@ -41,27 +41,27 @@ FROM (
     AND inner_org_name != 'Let\'s Encrypt'
     AND certs.parsed.validity.start < p443.https.tls.certificate.parsed.validity.start
 
-    -- Keep only precerts
-    AND certs.precert
+    -- Keep only non-precerts
+    AND not certs.precert
 
     -- Certs must have been valid.
     AND (certs.validation.apple.was_valid
       OR certs.validation.microsoft.was_valid
       OR certs.validation.google_ct_primary.was_valid
-      OR certs.validation.nss.was_valid)
+      OR certs.validation.nss.was_valid )
 
   GROUP BY
     certs.parsed.issuer_dn) AS le,
   (
   SELECT
     COUNT(*) AS all_valid_certs_by_issuer,
-    certs.parsed.issuer_dn AS dn_all
+    certs.parsed.issuer_dn AS issuer_dn_all
   FROM
     `censys-io.certificates_public.certificates` AS certs
   WHERE
 
-    -- Keep only precerts
-    certs.precert
+    -- Keep only non precerts
+    not certs.precert
 
     -- Must have been valid at some time in the past.
     AND (certs.validation.apple.was_valid
@@ -71,6 +71,6 @@ FROM (
 
   GROUP BY
     certs.parsed.issuer_dn) AS all_
-WHERE all_.dn_all = le.dn
+WHERE all_.issuer_dn_all = le.issuer_dn
 ORDER BY
-  ratio DESC;
+  normalized_prev_certs_by_issuer DESC;
