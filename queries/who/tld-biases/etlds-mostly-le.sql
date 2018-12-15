@@ -1,13 +1,6 @@
--- Question: what are the biases in TLDs that use Let's Encrypt?
+-- Question: What eTLDs have mostly Let's Encrypt certificates?
 
--- Same thing as in who.tld_biases.distribution-etlds.sql, but
--- normalized by the total number of certificates seen in that eTLD.
-
-SELECT
-    valid_le_certs_by_etld_last_week,
-    valid_certs_by_etld_last_week,
-    all_data.etld,
-    valid_le_certs_by_etld_last_week / valid_certs_by_etld_last_week as norm_ct
+SELECT all_data.etld, valid_le_certs_by_etld_last_week, valid_certs_by_etld_last_week
 FROM (
   SELECT
     COUNT(distinct parsed.serial_number) AS valid_le_certs_by_etld_last_week,
@@ -30,7 +23,7 @@ FROM (
     AND TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), metadata.updated_at, HOUR) <= 24 * 7
 
     -- Only keep precerts
-    AND precert
+    AND not precert
 
     -- Extract the eTLD this corresponds to
     AND ENDS_WITH(subject_name, etld)
@@ -56,13 +49,13 @@ FROM (
     AND TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), metadata.updated_at, HOUR) <= 24 * 7
 
     -- Only keep precerts
-    AND precert
+    AND not precert
 
     -- Extract the eTLD this corresponds to
     AND ENDS_WITH(subject_name, etld)
   GROUP BY
     etld) as all_data
 WHERE
-  all_data.etld = le_data.etld
-ORDER BY
-  norm_ct desc
+  all_data.etld = le_data.etld AND abs(valid_le_certs_by_etld_last_week - valid_certs_by_etld_last_week) < 500
+ORDER BY valid_le_certs_by_etld_last_week DESC
+  
