@@ -26,8 +26,8 @@ WHERE
   -- Only look at certs updated in the last week.
   AND TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), metadata.updated_at, HOUR) <= 24 * 7
 
-  -- Only keep precerts
-  AND precert
+  -- Only keep things that are not precerts.
+  AND not precert
 
   -- Extract the eTLD this corresponds to
   AND ENDS_WITH(subject_name, etld)
